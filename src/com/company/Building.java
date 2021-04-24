@@ -20,7 +20,7 @@ public class Building {
         int buildingHeight = rnd.nextInt(16)+5;
 
         for (int i = 0; i < buildingHeight; i++) {
-            building.add(new Floor(buildingHeight));
+            building.add(new Floor(buildingHeight, i));
         }
     }
 
