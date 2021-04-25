@@ -83,9 +83,8 @@ public class Simulation {
     private void changeForward() {
         var passengersForward = building.get(elevator.getCurrentFloor()).getPassengers()
                 .stream()
-                .filter(p -> p.isDown() == elevator.isDown())
-                .collect(Collectors.toList());
-        if (elevator.getPassengers().isEmpty() && passengersForward.isEmpty()) {
+                .anyMatch(e -> e.isDown() == elevator.isDown());
+        if (elevator.getPassengers().isEmpty() && !passengersForward) {
             elevator.setDown(!elevator.isDown());
         }
     }
