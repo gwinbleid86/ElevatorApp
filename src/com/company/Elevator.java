@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Elevator {
-    private final List<Passenger> passengers = new ArrayList<>(5);
+    private final List<Passenger> passengers = new ArrayList<>();
     private int currentFloor = 0;
     private boolean isDown;
-    private int destinationFloor;
-
-    public int getDestinationFloor() {
-        return destinationFloor;
-    }
 
     public boolean isDown() {
         return isDown;
@@ -19,10 +14,6 @@ public class Elevator {
 
     public void setDown(boolean down) {
         isDown = down;
-    }
-
-    public void setDestinationFloor(int destinationFloor) {
-        this.destinationFloor = destinationFloor;
     }
 
     public int getMaxCapacity() {

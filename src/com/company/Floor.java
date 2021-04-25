@@ -6,18 +6,12 @@ import java.util.Random;
 
 public class Floor {
     private final List<Passenger> passengers = new ArrayList<>();
-    private final int numFloor;
-
-    public int getNumFloor() {
-        return numFloor;
-    }
 
     public List<Passenger> getPassengers() {
         return passengers;
     }
 
     public Floor(int buildingHeight, int numFloor){
-        this.numFloor = numFloor;
         Random rnd = new Random();
         for (int i = 0; i <= rnd.nextInt(11); i++){
             passengers.add(new Passenger(buildingHeight, numFloor));

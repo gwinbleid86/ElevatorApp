@@ -1,9 +1,6 @@
 package com.company;
 
-import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.css.CSSUnknownRule;
-
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Simulation {
@@ -13,140 +10,93 @@ public class Simulation {
 
     public static void start() {
         Simulation s = new Simulation();
-        s.moveElevator();
+        try {
+            s.moveElevator();
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
     }
 
-    private void moveElevator() {
-//        int count = 1;
+    private void moveElevator() throws InterruptedException {
         while (true) {
-//            if (!elevator.isDown() && elevator.getCurrentFloor() < building.size()) {
-            oneStep(elevator.getCurrentFloor());
-//                elevator.setCurrentFloor(elevator.getCurrentFloor()+1);
-//            } else if (elevator.getCurrentFloor() == building.size()) {
-//                oneStep(elevator.getCurrentFloor());
-//            } else {
-//                oneStep(elevator.getCurrentFloor());
-//                elevator.setCurrentFloor(elevator.getCurrentFloor()-1);
-//            }
-//            count++;
-//        var wishedFloors = building.stream()
-//                .map(Floor::getPassengers)
-//                .flatMap(Collection::stream)
-//                .map(Passenger::getWishedFloor)
-//                .sorted()
-//                .collect(Collectors.toList());
-
-//        for (int i = 0; i < wishedFloors.get(wishedFloors.size() - 1); i++) {
-//            if (elevator.getMaxCapacity() == elevator.getPassengers().size()
-//                    && !needExit(i)) continue;
-//            str = new StringBuilder(String.format("\n\n***   Stage %s   ***\n\n", stage));
-//            str.append(String.format("Floor %s |", elevator.getCurrentFloor() + 1));
-//            actionFloor(i);
-//            elevator.setCurrentFloor(i + 1);
-//            print(str);
-//            stage++;
+            oneStep();
+            Thread.sleep(1000);
         }
     }
 
     private int stage = 1;
 
-    private void oneStep(int currentFloor) {
+    private void oneStep() {
         StringBuilder str;
-        if (elevator.getMaxCapacity() != elevator.getPassengers().size() || needExit(currentFloor) || isElevatorCall(currentFloor)) {
-            str = new StringBuilder(String.format("\n\n***   Stage %s   ***\n\n", stage));
-            str.append(String.format("Floor %s |", elevator.getCurrentFloor() + 1));
-            actionFloor(currentFloor);
-            print(str);
-        }
+        str = new StringBuilder(String.format("\n\n***   Stage %s   ***\n\n", stage));
+        str.append(String.format("Floor %s |", elevator.getCurrentFloor() + 1));
+        actionFloor();
+        print(str);
+        changeCurrentFloor();
         stage++;
     }
 
     //проверяем, есть-ли желающие выйти из лифта на текущем этаже
-    private boolean needExit(int currentFloor) {
-        boolean exit = false;
-        for (Passenger passenger : elevator.getPassengers()) {
-            exit = passenger.getWishedFloor() == currentFloor;
-        }
-        return exit;
+    private boolean needExit() {
+        return elevator.getPassengers().stream().noneMatch(e -> e.getWishedFloor() == elevator.getCurrentFloor());
     }
 
-    //проверяем есть-ли на этаже желающие ехать вверх
-    private boolean isElevatorCall(int currentFloor) {
-        boolean entrance = false;
-        for (Passenger p : building.get(currentFloor).getPassengers()) {
-            entrance = p.getWishedFloor() > currentFloor;
-        }
-        return entrance;
+    //проверяем есть-ли на текущем этаже желающие ехать по направлению движения лифта
+    private boolean isElevatorCall() {
+        return building.get(elevator.getCurrentFloor()).getPassengers().stream().noneMatch(e -> e.isDown() == elevator.isDown());
     }
 
     //действия с лифтом и пассажирами на этаже
-    private void actionFloor(int currentFloor) {
-
-//        if (currentFloor == building.size() || currentFloor == 0) {
-//            var passengersForward = building.get(elevator.getCurrentFloor()).getPassengers();
-//        }else{
+    private void actionFloor() {
         var passengersForward = building.get(elevator.getCurrentFloor()).getPassengers()
                 .stream()
                 .collect(Collectors.groupingBy(Passenger::isDown));
-//        }
-//        var needExit =
         movePassengersToFloor();
-        if (building.get(currentFloor).getPassengers().size() > 0) {
+        if (building.get(elevator.getCurrentFloor()).getPassengers().size() > 0) {
             if (elevator.isDown()) {
-//                if (elevator.getPassengers() == null && passengersForward.get(true) == null) {
-//                    elevator.setDown(!elevator.isDown());
-//                }else {
-                    movePassengersToElevator(currentFloor, passengersForward.get(true));
-//                }
+                movePassengersToElevator(passengersForward.get(true));
             } else {
-//                if (elevator.getPassengers() == null && passengersForward.get(false) == null) {
-//                    elevator.setDown(!elevator.isDown());
-//                }else{
-                    movePassengersToElevator(currentFloor, passengersForward.get(false));
-//                }
+                movePassengersToElevator(passengersForward.get(false));
             }
         }
+    }
+
+    //смена текущего этажа у лифта
+    private void changeCurrentFloor() {
         if (elevator.getCurrentFloor() < building.size() - 1 && !elevator.isDown()) {
             elevator.setCurrentFloor(elevator.getCurrentFloor() + 1);
-        } else if (currentFloor > 0 && elevator.isDown()) {
+            if ((elevator.getMaxCapacity() == elevator.getPassengers().size() || isElevatorCall()) && needExit()) {
+                changeCurrentFloor();
+            }
+        } else if (elevator.getCurrentFloor() > 0 && elevator.isDown()) {
             elevator.setCurrentFloor(elevator.getCurrentFloor() - 1);
+            if ((elevator.getMaxCapacity() == elevator.getPassengers().size() || isElevatorCall()) && needExit()) {
+                changeCurrentFloor();
+            }
         }
-//        else {
-//            changeForward(currentFloor);
-//            elevator.setDown(!elevator.isDown());
-//        }
-//        var passengersForward = building.get(currentFloor).getPassengers()
-//                .stream()
-//                .filter(p -> p.isDown() == elevator.isDown())
-//                .collect(Collectors.toList());
-//        if (elevator.getPassengers() == null && passengersForward == null) {
-//            elevator.setDown(!elevator.isDown());
-//        }
-
-
-
+        if (elevator.getCurrentFloor() == building.size() - 1 || elevator.getCurrentFloor() == 0) {
+            changeForward();
+        }
     }
 
     //смена направления движения лифта
-    private void changeForward(int currentFloor) {
-        var passengersForward = building.get(currentFloor).getPassengers()
+    private void changeForward() {
+        var passengersForward = building.get(elevator.getCurrentFloor()).getPassengers()
                 .stream()
                 .filter(p -> p.isDown() == elevator.isDown())
                 .collect(Collectors.toList());
-        if (elevator.getPassengers() == null && passengersForward == null) {
+        if (elevator.getPassengers().isEmpty() && passengersForward.isEmpty()) {
             elevator.setDown(!elevator.isDown());
         }
     }
 
     //реализация посадки пассажира в лифт
-    private void movePassengersToElevator(int floor, List<Passenger> passengers) {
-        int size = passengers == null? 0 : passengers.size();
+    private void movePassengersToElevator(List<Passenger> passengers) {
+        int size = passengers == null ? 0 : passengers.size();
         for (int i = 0; i < size; i++) {
-            if (elevator.getMaxCapacity() > i - 1) {
-                if (elevator.getPassengers().size() <= i) {
-                    elevator.addPassenger(passengers.get(i));
-                    building.get(floor).removePassenger(passengers.get(i));
-                }
+            if ((elevator.getMaxCapacity() - elevator.getPassengers().size()) > i) {
+                elevator.addPassenger(passengers.get(i));
+                building.get(elevator.getCurrentFloor()).removePassenger(passengers.get(i));
             }
         }
     }
