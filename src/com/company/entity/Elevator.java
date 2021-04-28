@@ -1,4 +1,4 @@
-package com.company;
+package com.company.entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +24,9 @@ public class Elevator {
         return passengers;
     }
 
-    public void addPassenger(Passenger passenger){
-        passengers.add(passenger);
+    public void addPassenger(Passenger passenger) throws Exception {
+        if (passengers.size() < getMaxCapacity()) passengers.add(passenger);
+        else throw new Exception("The maximum lift capacity has been reached. The passenger will have to wait for the next lift.");
     }
     public void removePassenger(Passenger passenger){
         passengers.remove(passenger);

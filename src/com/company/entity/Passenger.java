@@ -1,6 +1,6 @@
-package com.company;
+package com.company.entity;
 
-import java.util.Random;
+import com.company.util.Generator;
 
 public class Passenger {
     private final int wishedFloor;
@@ -15,9 +15,8 @@ public class Passenger {
     }
 
     public Passenger(int maxFloor, int currentFloor) {
-        Random rnd = new Random();
         while (true){
-            int random = rnd.nextInt(maxFloor);
+            int random = Generator.getRandomFromRange(0, maxFloor);
             if (random != currentFloor) {
                 wishedFloor = random;
                 break;
